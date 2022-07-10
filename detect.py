@@ -48,9 +48,11 @@ from utils.torch_utils import select_device, time_sync
 
 @torch.no_grad()
 def run(
-        weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
-        source=ROOT / 'data/images',  # file/dir/URL/glob, 0 for webcam
-        data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
+        # weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
+        weights=ROOT / 'best.pt',
+        source=ROOT / 'TestSet',  # file/dir/URL/glob, 0 for webcam  #这里改了
+        # data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
+        data=ROOT / 'data/temp.yaml',
         imgsz=(640, 640),  # inference size (height, width)
         conf_thres=0.25,  # confidence threshold
         iou_thres=0.45,  # NMS IOU threshold
@@ -148,7 +150,8 @@ def run(
             annotator = Annotator(im0, line_width=line_thickness, example=str(names))
             if len(det):
                 # Rescale boxes from img_size to im0 size
-                det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
+                # det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
+                det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape)
 
                 # Print results
                 for c in det[:, -1].unique():
@@ -158,8 +161,9 @@ def run(
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
                     if save_txt:  # Write to file
-                        xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                        line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
+                        # xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
+                        # line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
+                        line = (cls, *xyxy, conf) if save_conf else (cls, *xyxy)  # label format
                         with open(f'{txt_path}.txt', 'a') as f:
                             f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
@@ -210,18 +214,25 @@ def run(
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5s.pt', help='model path(s)')
-    parser.add_argument('--source', type=str, default=ROOT / 'data/images', help='file/dir/URL/glob, 0 for webcam')
-    parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='(optional) dataset.yaml path')
+    # parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'yolov5s.pt', help='model path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default=ROOT / 'best.pt', help='model path(s)')
+    # parser.add_argument('--source', type=str, default=ROOT / 'data/images', help='file/dir/URL/glob, 0 for webcam')
+    parser.add_argument('--source', type=str, default=ROOT / 'TestSet', help='file/dir/URL/glob, 0 for webcam')
+    # parser.add_argument('--data', type=str, default=ROOT / 'data/coco128.yaml', help='(optional) dataset.yaml path')
+    parser.add_argument('--data', type=str, default=ROOT / 'data/temp.yaml', help='(optional) dataset.yaml path')
     parser.add_argument('--imgsz', '--img', '--img-size', nargs='+', type=int, default=[640], help='inference size h,w')
+    # parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold')
     parser.add_argument('--conf-thres', type=float, default=0.25, help='confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='NMS IoU threshold')
     parser.add_argument('--max-det', type=int, default=1000, help='maximum detections per image')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--view-img', action='store_true', help='show results')
-    parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
-    parser.add_argument('--save-conf', action='store_true', help='save confidences in --save-txt labels')
-    parser.add_argument('--save-crop', action='store_true', help='save cropped prediction boxes')
+    # parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
+    # parser.add_argument('--save-conf', action='store_true', help='save confidences in --save-txt labels')
+    parser.add_argument('--save-txt', action='store_false', help='save results to *.txt')
+    parser.add_argument('--save-conf', action='store_false', help='save confidences in --save-txt labels')
+    # parser.add_argument('--save-crop', action='store_true', help='save cropped prediction boxes')
+    parser.add_argument('--save-crop', action='store_false', help='save cropped prediction boxes')
     parser.add_argument('--nosave', action='store_true', help='do not save images/videos')
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --classes 0, or --classes 0 2 3')
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')

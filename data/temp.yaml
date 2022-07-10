@@ -1,0 +1,12 @@
+path: data1  # dataset root dir
+train: images/train  # train images (relative to 'path') 320 images
+val: images/train  # val images (relative to 'path') 37 images
+# test images (optional)  41 images
+test:   images/test
+ 
+# Classes
+nc: 3  # number of classes
+# names: ['this','barrier','coast']  # class names
+#       barrier  coast   this
+# 需要和json2xml生成的类别对应起来
+names: ['barrier','coast','this']  # class names
